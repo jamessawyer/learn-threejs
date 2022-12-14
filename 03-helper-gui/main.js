@@ -1,19 +1,21 @@
 import './style.css'
 
-// 📺 https://www.bilibili.com/video/BV1SG411n7DW/?spm_id_from=pageDriver&vd_source=1b80f8e85d6b313a57c6e37edadd9d91
-// 📝 https://codepen.io/JamesSawyer/pen/QWxRPME
+// 📺 https://www.bilibili.com/video/BV1YF411K7pJ
+// 📝 https://codepen.io/JamesSawyer/pen/YzvoKBp
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 
 // 渲染器，相机，场景
-let renderer, camera, scene // 3要素 - 渲染器，相机，场景
-let axesHelper              // 辅助工具
-let ambientLight, spotLight // 灯光
-let plane, cylinder         // 场景中的物体
-let controls                // 控制器
+let renderer, camera, scene      // 3要素 - 渲染器，相机，场景
+let axesHelper, spotLightHelper  // 辅助工具
+let ambientLight, spotLight      // 灯光
+let plane, cylinder              // 场景中的物体
+let controls                     // 控制器
+let gui                          // GUI控制器
 
 initRenderer()
 initCamera()
@@ -23,10 +25,13 @@ initControls()
 
 initAmbientLight()
 initSpotLight()
+initSpotLightHelper()
 
 initMeshes()
 
 initShadow()
+
+buildGUI()
 
 render()
 
@@ -83,11 +88,15 @@ function initAmbientLight() {
 /*  添加聚光灯光 */
 function initSpotLight() {
   spotLight = new THREE.SpotLight(0xffffff, 1.0)
-  spotLight.position.set(-50, 80, 0) // 聚光灯放置位置
+  spotLight.position.set(-50, 60, 0) // 聚光灯放置位置 这里控制聚光灯摆放位置
   spotLight.angle = Math.PI / 6      // 聚光灯的角度
   // penumbra 的含义 `半影, 明暗交界部分, 边缘部分, 周围的气氛`
   spotLight.penumbra = 0.2
   scene.add(spotLight)
+}
+function initSpotLightHelper() {
+  spotLightHelper = new THREE.SpotLightHelper(spotLight)
+  scene.add(spotLightHelper)
 }
 
 /* 6️⃣ 添加物体到场景中 */
@@ -122,6 +131,41 @@ function initShadow() {
   plane.receiveShadow = true // 接收投影的物体
   spotLight.castShadow = true // 聚光灯也能产生投影
   renderer.shadowMap.enabled = true // 渲染器也能支持投影
+}
+
+function buildGUI() {
+  gui = new GUI()
+
+  // 菜单1
+  const spotLightFolder = gui.addFolder('Spot Light')
+  // 调试spotLight颜色
+  spotLightFolder.addColor(spotLight, 'color').onChange(function(val) {
+    spotLight.color.set(val)
+    render() // 设置颜色后，重新渲染一下
+  })
+  // 设置角度，0-Math.PI / 2 表示取值范围
+  spotLightFolder.add(spotLight, 'angle', 0, Math.PI / 2).onChange(function(val) {
+    // 上面的 `color` 是一个矢量，需要用 `set()` 方法，这里的 `angle` 是一个标量，直接赋值就可以了
+    spotLight.angle = val
+    render()                 // 设置颜色后，重新渲染一下
+    spotLightHelper.update() // 辅助线条调用
+  })
+  // 设置 `penumbra`
+  spotLightFolder.add(spotLight, 'penumbra', 0, 1).onChange(function(val) {
+    spotLight.penumbra = val
+    render()
+  })
+  spotLightFolder.close() // 可选设置，将文件夹设置为关闭状态
+
+  // 菜单2
+  const cameraFolder = gui.addFolder('Camera')
+  // step() 表示调整的精度
+  cameraFolder.add(camera.position, 'x', -1000, 1000).step(1).onChange(function(val) {
+    camera.position.x = val
+    render()
+  })
+
+  gui.close() // 将整个GUI默认设置为闭合状态
 }
 
 function render() {
