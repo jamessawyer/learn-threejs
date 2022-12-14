@@ -4,7 +4,8 @@ import './style.css'
 // 📝 https://codepen.io/JamesSawyer/pen/YzvoKBp
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+// import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { GUI } from 'dat.gui'
 
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
