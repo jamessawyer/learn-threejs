@@ -30,9 +30,20 @@ initShadow()
 
 render()
 
+// 根据 `resize` 调整相机视角和renderer尺寸
+window.addEventListener('resize', function() {
+  camera.aspect = window.innerWidth / window.innerHeight
+  // https://threejs.org/docs/#api/en/cameras/PerspectiveCamera.updateProjectionMatrix
+  // 上面调整相机视角之后，更新投影矩阵
+  // Updates the camera projection matrix. Must be called after any change of parameters.
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+})
+
 /* 1️⃣ 渲染器 */
 function initRenderer() {
   renderer = new THREE.WebGLRenderer()
+  renderer.setPixelRatio(window.devicePixelRatio) // 🚀更具屏幕dpr设置像素，使画面更加细腻
   renderer.setSize(WIDTH, HEIGHT)
   // renderer.domElement 就是一个 canvas，将其添加到DOM中
   document.querySelector('#app').appendChild(renderer.domElement)
